@@ -2,9 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'models/product.dart';
-import 'models/client.dart';
 import 'data/recommendation_engine.dart';
-import 'data/app_storage.dart';
 import 'screens/home_screen.dart';
 
 void main() async {

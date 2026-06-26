@@ -5,6 +5,7 @@ import '../data/recommendation_engine.dart';
 import '../data/app_storage.dart';
 import 'client_form_screen.dart';
 import 'program_view_screen.dart';
+import 'catalog_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final List<Product> products;
@@ -76,7 +77,9 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.inventory_2_outlined),
             tooltip: 'Каталог препаратов',
-            onPressed: () {/* TODO: catalog screen */},
+            onPressed: () => Navigator.push(context, MaterialPageRoute(
+              builder: (_) => CatalogScreen(products: widget.products),
+            )),
           ),
         ],
       ),
