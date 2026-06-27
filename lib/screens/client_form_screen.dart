@@ -17,6 +17,65 @@ class ClientFormScreen extends StatefulWidget {
   State<ClientFormScreen> createState() => _ClientFormScreenState();
 }
 
+// ─── Вопросы быстрого скрининга ──────────────────────────────────────────────
+class _ScreenQ {
+  final String id;
+  final int stage;
+  final String title;
+  final String hint;
+  final IconData icon;
+  final Color color;
+  final List<String> condIds; // IDs которые добавляются в симптомы клиента
+  const _ScreenQ(this.id, this.stage, this.title, this.hint, this.icon, this.color, this.condIds);
+}
+
+const _screeningQuestions = [
+  _ScreenQ('sq_git', 1, 'Нарушения пищеварения',
+    'Запоры, вздутие, тяжесть после еды, горечь во рту, нерегулярный стул',
+    Icons.restaurant, Color(0xFF8D6E63),
+    ['gut_dysbiosis', 'irritable_bowel', 'запор', 'вздутие', 'тяжесть_после_еды', 'горечь_во_рту']),
+
+  _ScreenQ('sq_detox', 1, 'Нагрузка на печень / детокс',
+    'Кожные высыпания, аллергии, приём лекарств, алкоголь, плохая экология',
+    Icons.water_drop_outlined, Color(0xFF8D6E63),
+    ['fatty_liver', 'detox', 'allergy', 'chemical_exposure', 'кожные_высыпания', 'аллергия']),
+
+  _ScreenQ('sq_immunity', 2, 'Ослабленный иммунитет',
+    'ОРВИ 3+ раз в год, долгое восстановление, герпес, хронические инфекции',
+    Icons.shield_outlined, Color(0xFF1976D2),
+    ['immunity', 'chronic_infection', 'частые_простуды', 'снижение_иммунитета', 'seasonal_prevention']),
+
+  _ScreenQ('sq_vitamins', 3, 'Дефицит витаминов и минералов',
+    'Выпадение волос, ломкость ногтей, сухость кожи, судороги в ногах',
+    Icons.local_pharmacy_outlined, Color(0xFF388E3C),
+    ['vitamin_deficiency', 'general_health', 'выпадение_волос', 'ломкость_ногтей', 'сухость_кожи', 'brittle_nails']),
+
+  _ScreenQ('sq_energy', 3, 'Хроническая усталость / стресс',
+    'Сниженная энергия, нарушение сна, тревога, снижение концентрации',
+    Icons.battery_charging_full_outlined, Color(0xFF388E3C),
+    ['усталость', 'слабость', 'бессонница', 'стресс', 'insomnia', 'chronic_stress', 'снижение_работоспособности']),
+
+  _ScreenQ('sq_joints', 3, 'Суставы, кости, позвоночник',
+    'Боли в суставах, хруст, остеохондроз, снижение подвижности',
+    Icons.accessibility_new, Color(0xFF388E3C),
+    ['osteoarthritis', 'osteochondrosis', 'osteoporosis', 'bone_health', 'боль_в_суставах', 'боль_в_спине', 'joint_pain']),
+
+  _ScreenQ('sq_heart', 2, 'Сердце и сосуды',
+    'Повышенное давление, варикоз, атеросклероз, отёки ног',
+    Icons.favorite_outline, Color(0xFF1976D2),
+    ['hypertension', 'atherosclerosis', 'varicose', 'cardiovascular', 'повышенное_давление', 'отёки']),
+
+  _ScreenQ('sq_recovery', 4, 'Восстановление после болезни/стресса',
+    'После ОРВИ, операции, антибиотиков, длительного стресса или COVID',
+    Icons.healing_outlined, Color(0xFF7B1FA2),
+    ['after_illness', 'after_antibiotics', 'chronic_stress', 'после_COVID', 'снижение_работоспособности']),
+
+  _ScreenQ('sq_antiage', 4, 'Антивозрастная поддержка',
+    'Снижение упругости кожи, памяти, либидо, замедленный обмен веществ',
+    Icons.elderly_outlined, Color(0xFF7B1FA2),
+    ['anti_age', 'antioxidant', 'brain_support', 'metabolism_disorders', 'снижение_памяти', 'снижение_либидо']),
+];
+
 class _ClientFormScreenState extends State<ClientFormScreen> {
   final _nameCtrl = TextEditingController();
   final _ageCtrl  = TextEditingController();
@@ -28,6 +87,12 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
   List<String> _selectedSymptoms   = [];
   List<String> _selectedDiagnoses  = [];
   List<String> _customSymptomsList  = [];
+  final Set<String> _activeScreening = {}; // id вопросов скрининга
+
+  List<String> get _screeningIds => _activeScreening
+      .expand((qid) => _screeningQuestions.firstWhere((q) => q.id == qid).condIds)
+      .toSet()
+      .toList();
 
   void _addCustomSymptom() {
     final text = _customSymptomsCtrl.text.trim();
@@ -70,12 +135,14 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
   }
 
   Client _buildClient() {
+    // Объединяем симптомы из чекбоксов и из скрининга (без дублей)
+    final allSymptoms = {..._selectedSymptoms, ..._screeningIds}.toList();
     return Client(
       id: widget.client?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
       name: _nameCtrl.text.trim(),
       age: int.tryParse(_ageCtrl.text) ?? 30,
       gender: _gender,
-      symptoms: _selectedSymptoms,
+      symptoms: allSymptoms,
       diagnoses: _selectedDiagnoses,
       customSymptoms: _customSymptomsList,
       labResults: _labCtrl.text.trim(),
@@ -150,7 +217,16 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
               _genderSelector(),
             ]),
             const SizedBox(height: 20),
-            _sectionTitle('Жалобы и симптомы'),
+            _sectionTitle('Быстрый скрининг'),
+            const SizedBox(height: 4),
+            const Text(
+              'Отметьте всё что беспокоит — программа подберёт нужные этапы',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 10),
+            _buildScreening(),
+            const SizedBox(height: 20),
+            _sectionTitle('Жалобы и симптомы (подробно)'),
             const SizedBox(height: 8),
             if (_conditions.isEmpty)
               const CircularProgressIndicator()
@@ -276,6 +352,55 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     onSelectionChanged: (s) => setState(() => _gender = s.first),
   );
 
+  static const _stageColors = {
+    1: Color(0xFF8D6E63),
+    2: Color(0xFF1976D2),
+    3: Color(0xFF388E3C),
+    4: Color(0xFF7B1FA2),
+  };
+  static const _stageNames = {1: 'ОЧИЩЕНИЕ', 2: 'ЗАЩИТА', 3: 'ПИТАНИЕ', 4: 'ВОССТАНОВЛЕНИЕ'};
+
+  Widget _buildScreening() {
+    // Группируем по этапу
+    final byStage = <int, List<_ScreenQ>>{};
+    for (final q in _screeningQuestions) {
+      byStage.putIfAbsent(q.stage, () => []).add(q);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: byStage.entries.map((entry) {
+        final stage = entry.key;
+        final color = _stageColors[stage] ?? Colors.grey;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                'Этап ${stage} — ${_stageNames[stage]}',
+                style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ...entry.value.map((q) => _ScreeningTile(
+              q: q,
+              active: _activeScreening.contains(q.id),
+              onToggle: (val) => setState(() {
+                val ? _activeScreening.add(q.id) : _activeScreening.remove(q.id);
+              }),
+            )),
+            const SizedBox(height: 8),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
   static const _systemNames = {
     'GIT':      'Пищеварение',
     'LIVER':    'Печень / желчный пузырь',
@@ -394,6 +519,62 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
           );
         }),
       ],
+    );
+  }
+}
+
+// ─── Карточка вопроса скрининга ───────────────────────────────────────────────
+class _ScreeningTile extends StatelessWidget {
+  final _ScreenQ q;
+  final bool active;
+  final ValueChanged<bool> onToggle;
+  const _ScreeningTile({required this.q, required this.active, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = q.color;
+    return GestureDetector(
+      onTap: () => onToggle(!active),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: active ? color.withValues(alpha: 0.1) : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: active ? color : Colors.grey.shade300,
+            width: active ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(q.icon, size: 22, color: active ? color : Colors.grey.shade400),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(q.title,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: active ? color : Colors.black87,
+                      )),
+                  Text(q.hint,
+                      style: const TextStyle(fontSize: 11, color: Colors.grey, height: 1.3)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              active ? Icons.check_circle : Icons.circle_outlined,
+              color: active ? color : Colors.grey.shade300,
+              size: 22,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
