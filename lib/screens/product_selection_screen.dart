@@ -100,6 +100,9 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
           : ListView(
               padding: const EdgeInsets.all(12),
               children: [
+                // Оценка необходимости каждого этапа
+                _StageAssessmentCard(scored: _scored, selectedIds: _selectedIds),
+                const SizedBox(height: 8),
                 // Анализ систем
                 _SystemAnalysisCard(client: widget.client),
                 const SizedBox(height: 8),
@@ -522,6 +525,187 @@ class _TestsCardState extends State<_TestsCard> {
             }),
           if (_expanded) const SizedBox(height: 4),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Оценка необходимости каждого этапа ──────────────────────────────────────
+class _StageAssessmentCard extends StatelessWidget {
+  final List<ScoredProduct> scored;
+  final Set<String> selectedIds;
+
+  const _StageAssessmentCard({required this.scored, required this.selectedIds});
+
+  static const _stageNames = {
+    1: 'ОЧИЩЕНИЕ',
+    2: 'ЗАЩИТА',
+    3: 'ПИТАНИЕ',
+    4: 'ВОССТАНОВЛЕНИЕ',
+  };
+
+  static const _stageColors = {
+    1: Color(0xFF8D6E63),
+    2: Color(0xFF1976D2),
+    3: Color(0xFF388E3C),
+    4: Color(0xFF7B1FA2),
+  };
+
+  static const _stageIcons = {
+    1: Icons.cleaning_services_outlined,
+    2: Icons.shield_outlined,
+    3: Icons.spa_outlined,
+    4: Icons.healing_outlined,
+  };
+
+  // Почему этап не нужен — клиническое объяснение
+  static const _whyNotNeeded = {
+    1: 'Нет признаков интоксикации, нарушений ЖКТ или перегрузки печени',
+    2: 'Нет признаков сниженного иммунитета или сердечно-сосудистых рисков',
+    3: 'Нет явных дефицитов питательных веществ',
+    4: 'Нет хронических органных нарушений, требующих целевой поддержки',
+  };
+
+  // Что указывает на необходимость этапа
+  static const _whyNeeded = {
+    1: 'Есть показания к детоксу, поддержке ЖКТ или печени',
+    2: 'Показана иммунная или сердечно-сосудистая поддержка',
+    3: 'Выявлены дефициты витаминов, минералов или хроническая усталость',
+    4: 'Есть хронические состояния, требующие целевого восстановления',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    // Подсчёт продуктов по этапам (с ненулевым скором)
+    final stageCount = <int, int>{};
+    final stageSelected = <int, int>{};
+    for (final s in scored) {
+      stageCount[s.product.stage] = (stageCount[s.product.stage] ?? 0) + 1;
+      if (selectedIds.contains(s.product.id)) {
+        stageSelected[s.product.stage] = (stageSelected[s.product.stage] ?? 0) + 1;
+      }
+    }
+
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(children: [
+              Icon(Icons.assessment_outlined, size: 18, color: Color(0xFF2E7D32)),
+              SizedBox(width: 8),
+              Text('Оценка этапов программы',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            ]),
+            const SizedBox(height: 12),
+            ...List.generate(4, (i) {
+              final stage = i + 1;
+              final count = stageCount[stage] ?? 0;
+              final selected = stageSelected[stage] ?? 0;
+              final needed = count > 0;
+              final color = _stageColors[stage]!;
+              final name = _stageNames[stage]!;
+              final icon = _stageIcons[stage]!;
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: needed
+                        ? color.withValues(alpha: 0.07)
+                        : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: needed ? color.withValues(alpha: 0.35) : Colors.grey.shade200,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(icon, size: 20,
+                          color: needed ? color : Colors.grey.shade400),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(children: [
+                              Text('Этап $stage — $name',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: needed ? color : Colors.grey.shade500,
+                                  )),
+                              const Spacer(),
+                              if (needed)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: color.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    selected > 0
+                                        ? '$selected из $count выбрано'
+                                        : '$count препаратов',
+                                    style: TextStyle(fontSize: 10, color: color,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                            ]),
+                            const SizedBox(height: 2),
+                            Text(
+                              needed ? _whyNeeded[stage]! : _whyNotNeeded[stage]!,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: needed ? Colors.black54 : Colors.grey.shade400,
+                                fontStyle: needed ? FontStyle.normal : FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        needed ? Icons.check_circle : Icons.remove_circle_outline,
+                        size: 18,
+                        color: needed ? color : Colors.grey.shade300,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+
+            // Отдельное выделение если Этап 1 не нужен
+            if ((stageCount[1] ?? 0) == 0)
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 15, color: Color(0xFF2E7D32)),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Очищение не требуется — это нормально. '
+                        'Программа начинается сразу с Этапа 2 или 3. '
+                        'Если позже появятся симптомы ЖКТ или печени — добавьте Этап 1.',
+                        style: TextStyle(fontSize: 11, color: Color(0xFF2E7D32), height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
