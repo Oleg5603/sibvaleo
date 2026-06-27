@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/product.dart';
 import '../models/client.dart';
 import '../data/recommendation_engine.dart';
@@ -145,11 +147,31 @@ class _TestsCard extends StatefulWidget {
 
 class _TestsCardState extends State<_TestsCard> {
   bool _expanded = false;
+  Map<String, Map<String, String>> _testMeta = {}; // id -> {name, purpose}
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTestMeta();
+  }
+
+  Future<void> _loadTestMeta() async {
+    final raw = await rootBundle.loadString('assets/data/conditions.json');
+    final data = jsonDecode(raw);
+    final map = <String, Map<String, String>>{};
+    for (final t in (data['tests'] as List? ?? [])) {
+      map[t['id'] as String] = {
+        'name': t['name'] as String? ?? t['id'],
+        'purpose': t['purpose'] as String? ?? '',
+      };
+    }
+    if (mounted) setState(() => _testMeta = map);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final tests = widget.engine.buildProgram(widget.client, []).recommendedTests;
-    if (tests.isEmpty) return const SizedBox();
+    final testIds = widget.engine.buildProgram(widget.client, []).recommendedTests;
+    if (testIds.isEmpty) return const SizedBox();
     return Card(
       color: Colors.orange.shade50,
       child: Column(
@@ -157,18 +179,27 @@ class _TestsCardState extends State<_TestsCard> {
           ListTile(
             leading: const Icon(Icons.science_outlined, color: Colors.orange),
             title: const Text('Рекомендуемые анализы', style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text('${tests.length} анализов для уточнения состояния'),
+            subtitle: Text('${testIds.length} анализов — помогут уточнить состояние'),
             trailing: IconButton(
               icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
               onPressed: () => setState(() => _expanded = !_expanded),
             ),
           ),
           if (_expanded)
-            ...tests.map((t) => ListTile(
-              dense: true,
-              leading: const Icon(Icons.check_circle_outline, color: Colors.orange, size: 20),
-              title: Text(t, style: const TextStyle(fontSize: 13)),
-            )),
+            ...testIds.map((id) {
+              final meta = _testMeta[id];
+              final name = meta?['name'] ?? id;
+              final purpose = meta?['purpose'] ?? '';
+              return ListTile(
+                dense: true,
+                leading: const Icon(Icons.check_circle_outline, color: Colors.orange, size: 20),
+                title: Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                subtitle: purpose.isNotEmpty
+                    ? Text(purpose, style: const TextStyle(fontSize: 12, color: Colors.black54))
+                    : null,
+              );
+            }),
+          if (_expanded) const SizedBox(height: 4),
         ],
       ),
     );

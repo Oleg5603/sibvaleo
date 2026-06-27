@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../models/client.dart';
+import '../utils/html_export.dart';
 
 class ProgramViewScreen extends StatefulWidget {
   final Program program;
@@ -42,6 +43,22 @@ class _ProgramViewScreenState extends State<ProgramViewScreen>
         title: Text('Программа: ${p.clientName}'),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.print_outlined),
+            tooltip: 'Экспорт / Печать',
+            onPressed: () async {
+              final path = await exportProgramToHtml(p);
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(path != null
+                    ? 'Открыт в браузере. Ctrl+P для печати / PDF'
+                    : 'Ошибка экспорта'),
+                duration: const Duration(seconds: 4),
+              ));
+            },
+          ),
+        ],
         bottom: TabBar(
           controller: _tabs,
           indicatorColor: Colors.white,

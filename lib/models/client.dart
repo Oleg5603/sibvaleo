@@ -5,6 +5,7 @@ class Client {
   String gender; // 'М' | 'Ж'
   List<String> symptoms;
   List<String> diagnoses;
+  List<String> customSymptoms;
   String labResults;
   String notes;
   DateTime createdAt;
@@ -16,6 +17,7 @@ class Client {
     required this.gender,
     this.symptoms = const [],
     this.diagnoses = const [],
+    this.customSymptoms = const [],
     this.labResults = '',
     this.notes = '',
     DateTime? createdAt,
@@ -28,6 +30,7 @@ class Client {
         'gender': gender,
         'symptoms': symptoms,
         'diagnoses': diagnoses,
+        'customSymptoms': customSymptoms,
         'labResults': labResults,
         'notes': notes,
         'createdAt': createdAt.toIso8601String(),
@@ -40,6 +43,7 @@ class Client {
         gender: j['gender'],
         symptoms: List<String>.from(j['symptoms'] ?? []),
         diagnoses: List<String>.from(j['diagnoses'] ?? []),
+        customSymptoms: List<String>.from(j['customSymptoms'] ?? []),
         labResults: j['labResults'] ?? '',
         notes: j['notes'] ?? '',
         createdAt: DateTime.parse(j['createdAt']),

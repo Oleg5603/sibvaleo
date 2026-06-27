@@ -22,6 +22,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
   final _ageCtrl  = TextEditingController();
   final _labCtrl  = TextEditingController();
   final _notesCtrl = TextEditingController();
+  final _customSymptomsCtrl = TextEditingController();
   String _gender = 'Ж';
 
   List<String> _selectedSymptoms   = [];
@@ -39,6 +40,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       _gender         = c.gender;
       _labCtrl.text   = c.labResults;
       _notesCtrl.text = c.notes;
+      _customSymptomsCtrl.text = c.customSymptoms.join('\n');
       _selectedSymptoms  = List.from(c.symptoms);
       _selectedDiagnoses = List.from(c.diagnoses);
     }
@@ -53,7 +55,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
   @override
   void dispose() {
     _nameCtrl.dispose(); _ageCtrl.dispose();
-    _labCtrl.dispose(); _notesCtrl.dispose();
+    _labCtrl.dispose(); _notesCtrl.dispose(); _customSymptomsCtrl.dispose();
     super.dispose();
   }
 
@@ -65,6 +67,11 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       gender: _gender,
       symptoms: _selectedSymptoms,
       diagnoses: _selectedDiagnoses,
+      customSymptoms: _customSymptomsCtrl.text
+          .split('\n')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList(),
       labResults: _labCtrl.text.trim(),
       notes: _notesCtrl.text.trim(),
       createdAt: widget.client?.createdAt,
@@ -149,6 +156,17 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
                   val ? _selectedSymptoms.add(id) : _selectedSymptoms.remove(id);
                 }),
               ),
+            const SizedBox(height: 12),
+            _sectionTitle('Другие жалобы (свободный ввод)'),
+            const SizedBox(height: 6),
+            TextField(
+              controller: _customSymptomsCtrl,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Каждая жалоба с новой строки:\nболь в области лопатки\nсухость во рту\nзвон в ушах',
+                border: OutlineInputBorder(),
+              ),
+            ),
             const SizedBox(height: 20),
             _sectionTitle('Диагнозы'),
             const SizedBox(height: 8),
