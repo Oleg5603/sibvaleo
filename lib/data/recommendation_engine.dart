@@ -49,55 +49,57 @@ class RecommendationEngine {
     return scored;
   }
 
-  /// Строит 60-дневную программу из выбранных препаратов
+  // Окно старта для каждого этапа внутри 60-дневной программы
+  static const _stageStartDay = {1: 1, 2: 8, 3: 22, 4: 36};
+
+  int _activeAt(List<ProgramEntry> entries, int day) =>
+      entries.where((e) => e.startDay <= day && e.endDay >= day).length;
+
+  /// Строит 60-дневную программу из выбранных препаратов.
+  /// Каждый этап получает своё окно: 1→д.1, 2→д.8, 3→д.22, 4→д.36.
+  /// Это гарантирует присутствие всех 4 этапов на шкале.
   Program buildProgram(Client client, List<Product> selected) {
-    // Сортируем по этапам: очищение → защита → питание → восстановление
-    final sorted = List<Product>.from(selected)
-      ..sort((a, b) => a.stage.compareTo(b.stage));
-
-    final entries = <ProgramEntry>[];
-    int currentDay = 1;
-    int activeCount = 0; // сколько препаратов сейчас одновременно
-
-    for (final p in sorted) {
-      if (currentDay > _programDays) break;
-
-      // Если одновременно уже 3 препарата — ждём пока один не закончится
-      while (activeCount >= _maxPerReception && currentDay <= _programDays) {
-        // Найти ближайший конец уже идущего препарата
-        int earliestEnd = _programDays + 1;
-        for (final e in entries) {
-          if (e.endDay >= currentDay && e.endDay < earliestEnd) {
-            earliestEnd = e.endDay;
-          }
-        }
-        currentDay = earliestEnd + _introGapDays;
-        // Пересчитываем активные
-        activeCount = entries.where((e) => e.endDay >= currentDay).length;
-      }
-
-      if (currentDay > _programDays) break;
-
-      final duration = p.minCourseDays.clamp(1, _programDays - currentDay + 1);
-      final dose = p.doseForAge(client.age);
-
-      entries.add(ProgramEntry(
-        productId: p.id,
-        productName: p.name,
-        startDay: currentDay,
-        durationDays: duration,
-        dose: dose,
-        timesPerDay: p.frequencyPerDay,
-        stageName: p.stageName,
-        stage: p.stage,
-      ));
-
-      // Следующий препарат вводится через 3-4 дня
-      currentDay += _introGapDays;
-      activeCount = entries.where((e) => e.endDay >= currentDay).length;
+    final byStage = <int, List<Product>>{};
+    for (final p in selected) {
+      byStage.putIfAbsent(p.stage, () => []).add(p);
     }
 
-    // Собираем рекомендуемые анализы
+    final entries = <ProgramEntry>[];
+
+    for (int stage = 1; stage <= 4; stage++) {
+      final products = byStage[stage] ?? [];
+      if (products.isEmpty) continue;
+
+      int day = _stageStartDay[stage]!;
+
+      for (final p in products) {
+        if (day > _programDays) break;
+
+        // Сдвигаем вперёд если уже 3 одновременных
+        while (_activeAt(entries, day) >= _maxPerReception && day <= _programDays) {
+          day++;
+        }
+        if (day > _programDays) break;
+
+        final duration = p.minCourseDays.clamp(1, _programDays - day + 1);
+        entries.add(ProgramEntry(
+          productId: p.id,
+          productName: p.name,
+          startDay: day,
+          durationDays: duration,
+          dose: p.doseForAge(client.age),
+          timesPerDay: p.frequencyPerDay,
+          stageName: p.stageName,
+          stage: stage,
+        ));
+
+        day += _introGapDays;
+      }
+    }
+
+    // Сортируем по дню начала для красивого отображения
+    entries.sort((a, b) => a.startDay.compareTo(b.startDay));
+
     final tests = _recommendTests(client);
 
     return Program(

@@ -27,6 +27,16 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
 
   List<String> _selectedSymptoms   = [];
   List<String> _selectedDiagnoses  = [];
+  List<String> _customSymptomsList  = [];
+
+  void _addCustomSymptom() {
+    final text = _customSymptomsCtrl.text.trim();
+    if (text.isEmpty) return;
+    setState(() {
+      _customSymptomsList.add(text);
+      _customSymptomsCtrl.clear();
+    });
+  }
 
   Map<String, dynamic> _conditions = {};
 
@@ -40,7 +50,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       _gender         = c.gender;
       _labCtrl.text   = c.labResults;
       _notesCtrl.text = c.notes;
-      _customSymptomsCtrl.text = c.customSymptoms.join('\n');
+      _customSymptomsList = List.from(c.customSymptoms);
       _selectedSymptoms  = List.from(c.symptoms);
       _selectedDiagnoses = List.from(c.diagnoses);
     }
@@ -67,11 +77,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       gender: _gender,
       symptoms: _selectedSymptoms,
       diagnoses: _selectedDiagnoses,
-      customSymptoms: _customSymptomsCtrl.text
-          .split('\n')
-          .map((s) => s.trim())
-          .where((s) => s.isNotEmpty)
-          .toList(),
+      customSymptoms: _customSymptomsList,
       labResults: _labCtrl.text.trim(),
       notes: _notesCtrl.text.trim(),
       createdAt: widget.client?.createdAt,
@@ -159,14 +165,47 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
             const SizedBox(height: 12),
             _sectionTitle('Другие жалобы (свободный ввод)'),
             const SizedBox(height: 6),
-            TextField(
-              controller: _customSymptomsCtrl,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Каждая жалоба с новой строки:\nболь в области лопатки\nсухость во рту\nзвон в ушах',
-                border: OutlineInputBorder(),
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _customSymptomsCtrl,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      hintText: 'Введите жалобу и нажмите +',
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (_) => _addCustomSymptom(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(48, 56),
+                    padding: EdgeInsets.zero,
+                  ),
+                  onPressed: _addCustomSymptom,
+                  child: const Icon(Icons.add),
+                ),
+              ],
             ),
+            if (_customSymptomsList.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: _customSymptomsList.map((s) => Chip(
+                  label: Text(s, style: const TextStyle(fontSize: 12)),
+                  deleteIcon: const Icon(Icons.close, size: 14),
+                  onDeleted: () => setState(() => _customSymptomsList.remove(s)),
+                  backgroundColor: Colors.green.shade50,
+                  side: BorderSide(color: Colors.green.shade200),
+                )).toList(),
+              ),
+            ],
             const SizedBox(height: 20),
             _sectionTitle('Диагнозы'),
             const SizedBox(height: 8),

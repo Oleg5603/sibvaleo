@@ -100,6 +100,12 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
           : ListView(
               padding: const EdgeInsets.all(12),
               children: [
+                // Анализ систем
+                _SystemAnalysisCard(client: widget.client),
+                const SizedBox(height: 8),
+                // Сводка жалоб клиента
+                _ComplaintsCard(client: widget.client),
+                const SizedBox(height: 8),
                 // Рекомендуемые анализы
                 _TestsCard(client: widget.client, engine: widget.engine),
                 const SizedBox(height: 12),
@@ -133,6 +139,314 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
           : null,
     );
   }
+}
+
+// ─── Анализ нагрузки по системам ─────────────────────────────────────────────
+class _SystemAnalysisCard extends StatefulWidget {
+  final Client client;
+  const _SystemAnalysisCard({required this.client});
+  @override
+  State<_SystemAnalysisCard> createState() => _SystemAnalysisCardState();
+}
+
+class _SystemAnalysisCardState extends State<_SystemAnalysisCard> {
+  _Analysis? _analysis;
+
+  // Какие системы страдают вторично при поражении первичной
+  static const _cascade = {
+    'GIT':     ['LIVER', 'IMMUNO', 'ENERGY', 'SKIN'],
+    'LIVER':   ['GIT', 'SKIN', 'IMMUNO', 'METABOL'],
+    'HEART':   ['ENERGY', 'NEURO', 'METABOL'],
+    'THYROID': ['METABOL', 'ENERGY', 'SKIN', 'NEURO', 'HEART'],
+    'IMMUNO':  ['RESP', 'SKIN', 'GIT', 'ENERGY'],
+    'NEURO':   ['ENERGY', 'HEART', 'IMMUNO'],
+    'METABOL': ['HEART', 'LIVER', 'JOINTS'],
+    'JOINTS':  ['ENERGY', 'METABOL'],
+    'GYNECO':  ['NEURO', 'METABOL', 'ENERGY', 'THYROID'],
+    'UROLOGY': ['ENERGY', 'IMMUNO'],
+    'SKIN':    ['LIVER', 'METABOL', 'IMMUNO'],
+    'ENERGY':  ['THYROID', 'LIVER', 'IMMUNO', 'NEURO'],
+    'DETOX':   ['LIVER', 'SKIN', 'IMMUNO'],
+    'RESP':    ['IMMUNO', 'DETOX', 'ENERGY'],
+    'CHILDREN':['IMMUNO', 'GIT', 'ENERGY'],
+    'ANTIAGE': ['METABOL', 'LIVER', 'SKIN'],
+  };
+
+  static const _systemNames = {
+    'GIT': 'ЖКТ', 'LIVER': 'Печень', 'HEART': 'Сердце/Сосуды',
+    'JOINTS': 'Суставы', 'NEURO': 'Нервная система', 'IMMUNO': 'Иммунитет',
+    'THYROID': 'Щитовидная железа', 'GYNECO': 'Женское здоровье',
+    'UROLOGY': 'Почки/МВП', 'SKIN': 'Кожа/Волосы', 'METABOL': 'Обмен веществ',
+    'ENERGY': 'Энергетика', 'DETOX': 'Детокс', 'RESP': 'Дыхание',
+    'CHILDREN': 'Детское здоровье', 'ANTIAGE': 'Anti-age',
+  };
+
+  static const _primaryText = {
+    'GIT':     'Нарушения ЖКТ снижают всасывание нутриентов — вторично страдают иммунитет, кожа и энергетика.',
+    'LIVER':   'Перегрузка печени нарушает детоксикацию, гормональный баланс и состояние кожи.',
+    'HEART':   'Сердечно-сосудистые нарушения снижают оксигенацию тканей мозга, почек и мышц.',
+    'THYROID': 'Щитовидная железа управляет обменом веществ: её дисфункция каскадно влияет на вес, настроение и сердце.',
+    'IMMUNO':  'Снижение иммунитета открывает путь хроническим инфекциям, аллергиям и аутоиммунным реакциям.',
+    'NEURO':   'Хронический стресс подавляет иммунитет, нарушает сон и усиливает боли в других системах.',
+    'METABOL': 'Нарушения обмена создают системное воспаление — страдают сосуды, печень и суставы.',
+    'JOINTS':  'Хроническое воспаление суставов истощает энергетику и повышает нагрузку на детоксикацию.',
+    'GYNECO':  'Гормональный дисбаланс влияет на настроение, кости, обмен веществ и сердечно-сосудистую систему.',
+    'UROLOGY': 'Хронические инфекции МВП снижают общий иммунитет и энергетику, нарушают микробиоту.',
+    'SKIN':    'Состояние кожи отражает внутренние проблемы — чаще всего это печень, кишечник или иммунитет.',
+    'ENERGY':  'Хроническая усталость требует исключения дефицитов (железо, D3, B12), дисфункции щитовидной и надпочечников.',
+    'DETOX':   'Накопление токсинов перегружает печень и иммунную систему, проявляется через кожу и кишечник.',
+    'RESP':    'Хронические заболевания дыхательных путей указывают на снижение иммунитета и аллергическую составляющую.',
+    'CHILDREN':'У детей снижение иммунитета связано с дефицитом витаминов, дисбактериозом и недостаточным питанием.',
+    'ANTIAGE': 'Преждевременное старение — дефицит антиоксидантов, нарушение детоксикации и снижение гормонального фона.',
+  };
+
+  static const _icons = {
+    'GIT': Icons.set_meal, 'LIVER': Icons.water_drop_outlined,
+    'HEART': Icons.favorite_outline, 'JOINTS': Icons.accessibility_new,
+    'NEURO': Icons.psychology_outlined, 'IMMUNO': Icons.shield_outlined,
+    'THYROID': Icons.radio_button_unchecked, 'GYNECO': Icons.female,
+    'UROLOGY': Icons.opacity, 'SKIN': Icons.face_outlined,
+    'METABOL': Icons.local_fire_department_outlined, 'ENERGY': Icons.bolt_outlined,
+    'DETOX': Icons.eco_outlined, 'RESP': Icons.air,
+    'CHILDREN': Icons.child_care, 'ANTIAGE': Icons.auto_awesome_outlined,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _analyse();
+  }
+
+  Future<void> _analyse() async {
+    final raw = await rootBundle.loadString('assets/data/conditions.json');
+    final data = jsonDecode(raw);
+
+    final symSystem = <String, String>{};
+    for (final s in (data['symptoms'] as List? ?? [])) {
+      symSystem[s['id'] as String] = s['system'] as String;
+    }
+    final diagSystem = <String, String>{};
+    for (final d in (data['diagnoses'] as List? ?? [])) {
+      diagSystem[d['id'] as String] = d['system'] as String;
+    }
+
+    final counts = <String, int>{};
+    for (final id in widget.client.symptoms) {
+      final sys = symSystem[id]; if (sys != null) counts[sys] = (counts[sys] ?? 0) + 1;
+    }
+    for (final id in widget.client.diagnoses) {
+      final sys = diagSystem[id]; if (sys != null) counts[sys] = (counts[sys] ?? 0) + 2; // диагноз весит больше
+    }
+
+    if (counts.isEmpty) return;
+
+    final sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final primary = sorted.first.key;
+    final secondary = sorted.length > 1 ? sorted.skip(1).take(2).map((e) => e.key).toList() : <String>[];
+    final cascade = (_cascade[primary] ?? [])
+        .where((s) => !secondary.contains(s) && s != primary)
+        .take(3)
+        .toList();
+
+    if (mounted) setState(() => _analysis = _Analysis(
+      primary: primary,
+      secondary: secondary,
+      cascade: cascade,
+      systemCounts: Map.fromEntries(sorted),
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final a = _analysis;
+    if (a == null) return const SizedBox();
+
+    final primaryColor = _colorFor(a.primary);
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Icon(Icons.analytics_outlined, color: primaryColor, size: 20),
+              const SizedBox(width: 8),
+              Text('Анализ состояния', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: primaryColor)),
+            ]),
+            const SizedBox(height: 10),
+
+            // Приоритетная система
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: primaryColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(_icons[a.primary] ?? Icons.circle, color: primaryColor, size: 28),
+                  const SizedBox(width: 10),
+                  Expanded(child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Приоритет: ${_systemNames[a.primary] ?? a.primary}',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontSize: 13)),
+                      const SizedBox(height: 2),
+                      Text(_primaryText[a.primary] ?? '', style: const TextStyle(fontSize: 12, color: Colors.black87)),
+                    ],
+                  )),
+                ],
+              ),
+            ),
+
+            // Также вовлечены
+            if (a.secondary.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              const Text('Также вовлечены:', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 6, runSpacing: 4,
+                children: a.secondary.map((s) => _sysChip(s, _colorFor(s))).toList(),
+              ),
+            ],
+
+            // Вероятные каскадные нарушения
+            if (a.cascade.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              const Text('Вероятные связанные нарушения:', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 6, runSpacing: 4,
+                children: a.cascade.map((s) => _sysChip(s, Colors.grey.shade600, dashed: true)).toList(),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sysChip(String sys, Color color, {bool dashed = false}) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(
+      color: dashed ? Colors.transparent : color.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: color.withValues(alpha: dashed ? 0.4 : 0.5),
+          style: dashed ? BorderStyle.solid : BorderStyle.solid),
+    ),
+    child: Row(mainAxisSize: MainAxisSize.min, children: [
+      Icon(_icons[sys] ?? Icons.circle, size: 13, color: color),
+      const SizedBox(width: 4),
+      Text(_systemNames[sys] ?? sys, style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w500)),
+    ]),
+  );
+
+  Color _colorFor(String sys) => const {
+    'GIT': Color(0xFF6D4C41), 'LIVER': Color(0xFFE65100),
+    'HEART': Color(0xFFC62828), 'JOINTS': Color(0xFFE64A19),
+    'NEURO': Color(0xFF6A1B9A), 'IMMUNO': Color(0xFF00695C),
+    'THYROID': Color(0xFF1565C0), 'GYNECO': Color(0xFFAD1457),
+    'UROLOGY': Color(0xFF00838F), 'SKIN': Color(0xFF558B2F),
+    'METABOL': Color(0xFFBF360C), 'ENERGY': Color(0xFFF9A825),
+    'DETOX': Color(0xFF2E7D32), 'RESP': Color(0xFF0277BD),
+    'CHILDREN': Color(0xFF00897B), 'ANTIAGE': Color(0xFF7B1FA2),
+  }[sys] ?? Colors.grey;
+}
+
+class _Analysis {
+  final String primary;
+  final List<String> secondary;
+  final List<String> cascade;
+  final Map<String, int> systemCounts;
+  const _Analysis({required this.primary, required this.secondary, required this.cascade, required this.systemCounts});
+}
+
+// ─── Сводка жалоб клиента ────────────────────────────────────────────────────
+class _ComplaintsCard extends StatefulWidget {
+  final Client client;
+  const _ComplaintsCard({required this.client});
+  @override
+  State<_ComplaintsCard> createState() => _ComplaintsCardState();
+}
+
+class _ComplaintsCardState extends State<_ComplaintsCard> {
+  bool _expanded = false;
+  Map<String, String> _symNames = {}; // id → name
+  Map<String, String> _diagNames = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNames();
+  }
+
+  Future<void> _loadNames() async {
+    final raw = await rootBundle.loadString('assets/data/conditions.json');
+    final data = jsonDecode(raw);
+    final sm = <String, String>{};
+    for (final s in (data['symptoms'] as List? ?? [])) {
+      sm[s['id']] = s['name'];
+    }
+    final dm = <String, String>{};
+    for (final d in (data['diagnoses'] as List? ?? [])) {
+      dm[d['id']] = d['name'];
+    }
+    if (mounted) setState(() { _symNames = sm; _diagNames = dm; });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.client;
+    final allCount = c.symptoms.length + c.diagnoses.length + c.customSymptoms.length;
+    if (allCount == 0) return const SizedBox();
+    return Card(
+      color: Colors.teal.shade50,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.person_search, color: Colors.teal),
+            title: Text('Жалобы: ${c.name}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text('$allCount позиций'),
+            trailing: IconButton(
+              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+              onPressed: () => setState(() => _expanded = !_expanded),
+            ),
+          ),
+          if (_expanded) ...[
+            if (c.symptoms.isNotEmpty) _section('Симптомы', c.symptoms.map((id) => _symNames[id] ?? id).toList(), Colors.teal),
+            if (c.diagnoses.isNotEmpty) _section('Диагнозы', c.diagnoses.map((id) => _diagNames[id] ?? id).toList(), Colors.indigo),
+            if (c.customSymptoms.isNotEmpty) _section('Другие жалобы', c.customSymptoms, Colors.green),
+            const SizedBox(height: 8),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _section(String title, List<String> items, Color color) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 6,
+          runSpacing: 4,
+          children: items.map((s) => Chip(
+            label: Text(s, style: const TextStyle(fontSize: 11)),
+            backgroundColor: color.withValues(alpha: 0.1),
+            side: BorderSide(color: color.withValues(alpha: 0.3)),
+            visualDensity: VisualDensity.compact,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          )).toList(),
+        ),
+      ],
+    ),
+  );
 }
 
 // ─── Карточка рекомендуемых анализов ─────────────────────────────────────────
