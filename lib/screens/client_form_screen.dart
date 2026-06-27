@@ -158,6 +158,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
               _checkboxGroup(
                 items: (_conditions['symptoms'] as List? ?? []),
                 selected: _selectedSymptoms,
+                label: 'симптомы',
                 onToggle: (id, val) => setState(() {
                   val ? _selectedSymptoms.add(id) : _selectedSymptoms.remove(id);
                 }),
@@ -213,6 +214,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
               _checkboxGroup(
                 items: (_conditions['diagnoses'] as List? ?? []),
                 selected: _selectedDiagnoses,
+                label: 'диагнозы',
                 onToggle: (id, val) => setState(() {
                   val ? _selectedDiagnoses.add(id) : _selectedDiagnoses.remove(id);
                 }),
@@ -274,11 +276,37 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     onSelectionChanged: (s) => setState(() => _gender = s.first),
   );
 
+  static const _systemNames = {
+    'GIT':      'Пищеварение',
+    'LIVER':    'Печень / желчный пузырь',
+    'HEART':    'Сердце и сосуды',
+    'JOINTS':   'Суставы и кости',
+    'NEURO':    'Нервная система',
+    'IMMUNO':   'Иммунитет',
+    'THYROID':  'Щитовидная железа',
+    'GYNECO':   'Женское здоровье',
+    'UROLOGY':  'Мочевыводящие пути',
+    'SKIN':     'Кожа и волосы',
+    'METABOL':  'Обмен веществ / вес',
+    'ENERGY':   'Энергия и усталость',
+    'DETOX':    'Детокс / экология',
+    'RESP':     'Дыхательная система',
+    'CHILDREN': 'Детское здоровье',
+    'ANTIAGE':  'Антивозрастное',
+    'OTHER':    'Прочее',
+  };
+
   Widget _checkboxGroup({
     required List items,
     required List<String> selected,
     required void Function(String id, bool val) onToggle,
+    required String label,
   }) {
+    // Индекс id → name для итогового списка
+    final Map<String, String> nameById = {
+      for (final item in items) item['id'] as String: item['name'] as String,
+    };
+
     // Группируем по системе
     final Map<String, List<Map>> bySystem = {};
     for (final item in items) {
@@ -286,24 +314,86 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       bySystem.putIfAbsent(sys, () => []).add(item as Map);
     }
 
+    final selectedInGroup = selected.where(nameById.containsKey).toList();
+
     return Column(
-      children: bySystem.entries.map((entry) {
-        return ExpansionTile(
-          title: Text(entry.key, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-          initiallyExpanded: entry.value.any((i) => selected.contains(i['id'])),
-          children: entry.value.map((item) {
-            final id = item['id'] as String;
-            final name = item['name'] as String;
-            return CheckboxListTile(
-              dense: true,
-              title: Text(name, style: const TextStyle(fontSize: 14)),
-              value: selected.contains(id),
-              onChanged: (v) => onToggle(id, v ?? false),
-              controlAffinity: ListTileControlAffinity.leading,
-            );
-          }).toList(),
-        );
-      }).toList(),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Итоговый список отмеченного
+        if (selectedInGroup.isNotEmpty) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8F5E9),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFA5D6A7)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Отмечено ($label): ${selectedInGroup.length}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+                        color: Color(0xFF2E7D32))),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: selectedInGroup.map((id) => Chip(
+                    label: Text(nameById[id] ?? id,
+                        style: const TextStyle(fontSize: 11)),
+                    deleteIcon: const Icon(Icons.close, size: 13),
+                    onDeleted: () => onToggle(id, false),
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: Color(0xFFA5D6A7)),
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  )).toList(),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+
+        // Группы по категориям
+        ...bySystem.entries.map((entry) {
+          final sysName = _systemNames[entry.key] ?? entry.key;
+          final hasSelected = entry.value.any((i) => selected.contains(i['id']));
+          return ExpansionTile(
+            title: Row(children: [
+              Expanded(child: Text(sysName,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
+              if (hasSelected)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2E7D32),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${entry.value.where((i) => selected.contains(i['id'])).length}',
+                    style: const TextStyle(fontSize: 11, color: Colors.white,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+            ]),
+            initiallyExpanded: hasSelected,
+            children: entry.value.map((item) {
+              final id = item['id'] as String;
+              final name = item['name'] as String;
+              return CheckboxListTile(
+                dense: true,
+                title: Text(name, style: const TextStyle(fontSize: 14)),
+                value: selected.contains(id),
+                onChanged: (v) => onToggle(id, v ?? false),
+                controlAffinity: ListTileControlAffinity.leading,
+                activeColor: const Color(0xFF2E7D32),
+              );
+            }).toList(),
+          );
+        }),
+      ],
     );
   }
 }
