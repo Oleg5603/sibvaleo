@@ -20,7 +20,9 @@
     "frequency_per_day": 1,
     "min_course_days": 30,
     "max_course_days": 90,
-    "notes": "Принимать во время еды. Интенсивная схема при ОРВИ/гриппе — 5 капс/день 9 дней."
+    "notes": "Принимать во время еды. Интенсивная схема при ОРВИ/гриппе — 5 капс/день 9 дней.",
+    "synergy_with": ["iron_organic", "zinc_organic", "omega3_north", "epam_7", "collagen_beauty", "selenium_organic", "epam_900"],
+    "antagonism_with": []
   },
   {
     "id": "omega3_north",
@@ -43,7 +45,9 @@
     "frequency_per_day": 1,
     "min_course_days": 60,
     "max_course_days": 180,
-    "notes": "Принимать во время еды. Не прерывать приём — эффект накопительный."
+    "notes": "Принимать во время еды. Не прерывать приём — эффект накопительный.",
+    "synergy_with": ["novomin", "q10", "epam_44", "curcumin", "vitamin_d3", "epam_31", "glucosamine_chondroitin", "beauty_vitamins", "collagen_beauty"],
+    "antagonism_with": ["linseed_omega"]
   },
   {
     "id": "elbifid",
@@ -66,7 +70,9 @@
     "frequency_per_day": 1,
     "min_course_days": 30,
     "max_course_days": 90,
-    "notes": "Принимать натощак или за 30 мин до еды. DR-капсулы не вскрывать."
+    "notes": "Принимать натощак или за 30 мин до еды. DR-капсулы не вскрывать.",
+    "synergy_with": ["epam_11", "origins_purity"],
+    "antagonism_with": []
   },
   {
     "id": "vitamin_d3",
@@ -89,7 +95,9 @@
     "frequency_per_day": 1,
     "min_course_days": 60,
     "max_course_days": 365,
-    "notes": "Принимать с жирной пищей для лучшего усвоения. Зимой дозу можно удвоить."
+    "notes": "Принимать с жирной пищей для лучшего усвоения. Зимой дозу можно удвоить.",
+    "synergy_with": ["calcium_organic", "magnesium_organic", "omega3_north", "collagen_beauty"],
+    "antagonism_with": ["calcium_with_d3"]
   },
   {
     "id": "calcium_organic",
@@ -112,7 +120,9 @@
     "frequency_per_day": 2,
     "min_course_days": 60,
     "max_course_days": 180,
-    "notes": "Разделить приём на 2 раза. Не принимать вместе с препаратами железа."
+    "notes": "Разделить приём на 2 раза. Не принимать вместе с препаратами железа.",
+    "synergy_with": ["vitamin_d3", "magnesium_organic", "collagen_beauty", "glucosamine_chondroitin"],
+    "antagonism_with": ["iron_organic", "zinc_organic", "calcium_with_d3", "mega_vitamins"]
   },
   {
     "id": "magnesium_organic",
@@ -135,7 +145,9 @@
     "frequency_per_day": 1,
     "min_course_days": 30,
     "max_course_days": 90,
-    "notes": "Лучше принимать вечером — улучшает сон и расслабляет мышцы."
+    "notes": "Лучше принимать вечером — улучшает сон и расслабляет мышцы.",
+    "synergy_with": ["vitamin_d3", "calcium_organic", "rhythms_health", "epam_44", "iodine_organic", "epam_24", "calcium_with_d3"],
+    "antagonism_with": []
   },
   {
     "id": "zinc_organic",
@@ -158,7 +170,9 @@
     "frequency_per_day": 1,
     "min_course_days": 30,
     "max_course_days": 60,
-    "notes": "Не принимать одновременно с кальцием и железом — снижают усвоение друг друга."
+    "notes": "Не принимать одновременно с кальцием и железом — снижают усвоение друг друга.",
+    "synergy_with": ["selenium_organic", "novomin", "epam_7"],
+    "antagonism_with": ["iron_organic", "calcium_organic"]
   },
   {
     "id": "iron_organic",
@@ -181,7 +195,9 @@
     "frequency_per_day": 1,
     "min_course_days": 60,
     "max_course_days": 180,
-    "notes": "Принимать натощак или с витамином С. Может вызвать тёмный стул — норма."
+    "notes": "Принимать натощак или с витамином С. Может вызвать тёмный стул — норма.",
+    "synergy_with": ["novomin"],
+    "antagonism_with": ["calcium_organic", "zinc_organic", "calcium_with_d3"]
   },
   {
     "id": "iodine_organic",
@@ -204,7 +220,9 @@
     "frequency_per_day": 1,
     "min_course_days": 60,
     "max_course_days": 180,
-    "notes": "При болезни Хашимото — только по назначению врача. Анализ ТТГ до начала курса."
+    "notes": "При болезни Хашимото — только по назначению врача. Анализ ТТГ до начала курса.",
+    "synergy_with": ["selenium_organic", "magnesium_organic"],
+    "antagonism_with": []
   },
   {
     "id": "selenium_organic",
@@ -227,7 +245,9 @@
     "frequency_per_day": 1,
     "min_course_days": 30,
     "max_course_days": 90,
-    "notes": "Не превышать дозу — селен токсичен при передозировке."
+    "notes": "Не превышать дозу — селен токсичен при передозировке.",
+    "synergy_with": ["zinc_organic", "iodine_organic", "novomin"],
+    "antagonism_with": []
   },
   {
     "id": "epam_4",
@@ -250,7 +270,9 @@
     "frequency_per_day": 3,
     "min_course_days": 30,
     "max_course_days": 60,
-    "notes": "Принимать за 30 мин до еды. Начинать с минимальной дозы."
+    "notes": "Принимать за 30 мин до еды. Начинать с минимальной дозы.",
+    "synergy_with": ["detox_pro", "curcumin", "origins_purity"],
+    "antagonism_with": []
   },
   {
     "id": "epam_11",
@@ -273,7 +295,9 @@
     "frequency_per_day": 3,
     "min_course_days": 30,
     "max_course_days": 60,
-    "notes": "Принимать за 30 мин до еды. При язве — обязателен контроль рН."
+    "notes": "Принимать за 30 мин до еды. При язве — обязателен контроль рН.",
+    "synergy_with": ["elbifid"],
+    "antagonism_with": []
   },
   {
     "id": "epam_7",
@@ -296,7 +320,9 @@
     "frequency_per_day": 3,
     "min_course_days": 14,
     "max_course_days": 30,
-    "notes": "При острой инфекции начать сразу. Профилактика — курс 14 дней осенью/весной."
+    "notes": "При острой инфекции начать сразу. Профилактика — курс 14 дней осенью/весной.",
+    "synergy_with": ["novomin", "zinc_organic", "epam_900"],
+    "antagonism_with": []
   },
   {
     "id": "epam_44",
@@ -319,7 +345,9 @@
     "frequency_per_day": 3,
     "min_course_days": 30,
     "max_course_days": 90,
-    "notes": "Не совмещать с гипотензивными препаратами без контроля врача."
+    "notes": "Не совмещать с гипотензивными препаратами без контроля врача.",
+    "synergy_with": ["omega3_north", "q10", "magnesium_organic"],
+    "antagonism_with": ["epam_1000"]
   },
   {
     "id": "epam_31",
@@ -342,7 +370,9 @@
     "frequency_per_day": 3,
     "min_course_days": 30,
     "max_course_days": 90,
-    "notes": "Можно использовать наружно — нанести несколько капель на больной сустав."
+    "notes": "Можно использовать наружно — нанести несколько капель на больной сустав.",
+    "synergy_with": ["glucosamine_chondroitin", "curcumin", "omega3_north"],
+    "antagonism_with": []
   },
   {
     "id": "epam_96",
@@ -365,7 +395,9 @@
     "frequency_per_day": 3,
     "min_course_days": 21,
     "max_course_days": 45,
-    "notes": "Обильное питьё усиливает эффект. При почечной недостаточности — запрещено."
+    "notes": "Обильное питьё усиливает эффект. При почечной недостаточности — запрещено.",
+    "synergy_with": ["cranberry_bearberry"],
+    "antagonism_with": []
   },
   {
     "id": "epam_24",
@@ -388,7 +420,9 @@
     "frequency_per_day": 2,
     "min_course_days": 30,
     "max_course_days": 90,
-    "notes": "Принимать с 5 по 25 день цикла при менструальных нарушениях."
+    "notes": "Принимать с 5 по 25 день цикла при менструальных нарушениях.",
+    "synergy_with": ["magnesium_organic"],
+    "antagonism_with": []
   },
   {
     "id": "epam_1000",
@@ -411,7 +445,9 @@
     "frequency_per_day": 2,
     "min_course_days": 30,
     "max_course_days": 90,
-    "notes": "Не совмещать с антикоагулянтами (гинкго). Курс 3 месяца для стойкого эффекта."
+    "notes": "Не совмещать с антикоагулянтами (гинкго). Курс 3 месяца для стойкого эффекта.",
+    "synergy_with": ["omega3_north", "magnesium_organic"],
+    "antagonism_with": ["epam_44"]
   },
   {
     "id": "epam_900",
@@ -434,7 +470,9 @@
     "frequency_per_day": 3,
     "min_course_days": 14,
     "max_course_days": 30,
-    "notes": "При острой фазе начать немедленно с максимальной дозы."
+    "notes": "При острой фазе начать немедленно с максимальной дозы.",
+    "synergy_with": ["epam_7", "novomin"],
+    "antagonism_with": []
   },
   {
     "id": "glucosamine_chondroitin",
@@ -457,7 +495,9 @@
     "frequency_per_day": 2,
     "min_course_days": 60,
     "max_course_days": 180,
-    "notes": "Минимальный курс 3 месяца для видимого эффекта. Принимать во время еды."
+    "notes": "Минимальный курс 3 месяца для видимого эффекта. Принимать во время еды.",
+    "synergy_with": ["epam_31", "calcium_organic", "collagen_beauty", "omega3_north"],
+    "antagonism_with": []
   },
   {
     "id": "q10",
@@ -480,7 +520,9 @@
     "frequency_per_day": 1,
     "min_course_days": 60,
     "max_course_days": 180,
-    "notes": "Принимать обязательно с жирной пищей. Q10 снижается с возрастом — особенно важен после 40."
+    "notes": "Принимать обязательно с жирной пищей. Q10 снижается с возрастом — особенно важен после 40.",
+    "synergy_with": ["omega3_north", "epam_44", "mega_vitamins"],
+    "antagonism_with": []
   },
   {
     "id": "rhythms_health",
@@ -503,7 +545,9 @@
     "frequency_per_day": 2,
     "min_course_days": 30,
     "max_course_days": 90,
-    "notes": "Утренняя таблетка содержит энергетические витамины, вечерняя — для восстановления."
+    "notes": "Утренняя таблетка содержит энергетические витамины, вечерняя — для восстановления.",
+    "synergy_with": ["magnesium_organic", "omega3_north"],
+    "antagonism_with": ["mega_vitamins"]
   },
   {
     "id": "origins_purity",
@@ -526,7 +570,9 @@
     "frequency_per_day": 2,
     "min_course_days": 16,
     "max_course_days": 16,
-    "notes": "Программа 16 дней, 3 фазы: подготовка, очищение, восстановление. Обильное питьё."
+    "notes": "Программа 16 дней, 3 фазы: подготовка, очищение, восстановление. Обильное питьё.",
+    "synergy_with": ["epam_4", "elbifid"],
+    "antagonism_with": ["detox_pro"]
   },
   {
     "id": "cranberry_bearberry",
@@ -549,7 +595,9 @@
     "frequency_per_day": 2,
     "min_course_days": 14,
     "max_course_days": 60,
-    "notes": "Профилактика — постоянный приём у склонных к циститу. Обильное питьё."
+    "notes": "Профилактика — постоянный приём у склонных к циститу. Обильное питьё.",
+    "synergy_with": ["epam_96"],
+    "antagonism_with": []
   },
   {
     "id": "collagen_beauty",
@@ -572,7 +620,9 @@
     "frequency_per_day": 1,
     "min_course_days": 60,
     "max_course_days": 180,
-    "notes": "Минимальный курс 3 месяца. Принимать с витамином С для синтеза коллагена."
+    "notes": "Минимальный курс 3 месяца. Принимать с витамином С для синтеза коллагена.",
+    "synergy_with": ["vitamin_d3", "calcium_organic", "novomin", "glucosamine_chondroitin", "beauty_vitamins", "omega3_north", "linseed_omega"],
+    "antagonism_with": []
   },
   {
     "id": "curcumin",
@@ -595,7 +645,9 @@
     "frequency_per_day": 1,
     "min_course_days": 30,
     "max_course_days": 90,
-    "notes": "BCM-95 усваивается в 7 раз лучше обычного куркумина. Принимать с жирной пищей."
+    "notes": "BCM-95 усваивается в 7 раз лучше обычного куркумина. Принимать с жирной пищей.",
+    "synergy_with": ["omega3_north", "epam_4", "epam_31"],
+    "antagonism_with": []
   },
   {
     "id": "vitamama_omega_children",
@@ -618,7 +670,9 @@
     "frequency_per_day": 1,
     "min_course_days": 30,
     "max_course_days": 180,
-    "notes": "Детям с 3 лет. Жевательная форма — удобна для детей."
+    "notes": "Детям с 3 лет. Жевательная форма — удобна для детей.",
+    "synergy_with": ["immunotops_children"],
+    "antagonism_with": []
   },
   {
     "id": "immunotops_children",
@@ -641,7 +695,9 @@
     "frequency_per_day": 2,
     "min_course_days": 30,
     "max_course_days": 60,
-    "notes": "Детям с 3 лет. Жевательная форма с фруктовым вкусом."
+    "notes": "Детям с 3 лет. Жевательная форма с фруктовым вкусом.",
+    "synergy_with": ["vitamama_omega_children"],
+    "antagonism_with": []
   },
   {
     "id": "detox_pro",
@@ -664,7 +720,9 @@
     "frequency_per_day": 2,
     "min_course_days": 30,
     "max_course_days": 60,
-    "notes": "Начинать с 1 капсулы первую неделю — возможна реакция детоксикации."
+    "notes": "Начинать с 1 капсулы первую неделю — возможна реакция детоксикации.",
+    "synergy_with": ["epam_4"],
+    "antagonism_with": ["origins_purity"]
   },
   {
     "id": "linseed_omega",
@@ -687,7 +745,9 @@
     "frequency_per_day": 1,
     "min_course_days": 60,
     "max_course_days": 180,
-    "notes": "Хорошая альтернатива для вегетарианцев (содержит ALA из льна)."
+    "notes": "Хорошая альтернатива для вегетарианцев (содержит ALA из льна).",
+    "synergy_with": ["novomin", "collagen_beauty"],
+    "antagonism_with": ["omega3_north"]
   },
   {
     "id": "mega_vitamins",
@@ -710,7 +770,9 @@
     "frequency_per_day": 2,
     "min_course_days": 30,
     "max_course_days": 90,
-    "notes": "Не принимать вечером — может нарушить сон из-за витаминов группы B."
+    "notes": "Не принимать вечером — может нарушить сон из-за витаминов группы B.",
+    "synergy_with": ["omega3_north", "q10"],
+    "antagonism_with": ["rhythms_health", "calcium_organic"]
   },
   {
     "id": "beauty_vitamins",
@@ -733,7 +795,9 @@
     "frequency_per_day": 1,
     "min_course_days": 60,
     "max_course_days": 180,
-    "notes": "Видимый эффект через 2-3 месяца регулярного приёма."
+    "notes": "Видимый эффект через 2-3 месяца регулярного приёма.",
+    "synergy_with": ["collagen_beauty", "omega3_north"],
+    "antagonism_with": []
   },
   {
     "id": "calcium_with_d3",
@@ -756,6 +820,8 @@
     "frequency_per_day": 1,
     "min_course_days": 30,
     "max_course_days": 90,
-    "notes": "Принимать во время еды для лучшего усвоения. Разделить приём с препаратами железа."
+    "notes": "Принимать во время еды для лучшего усвоения. Разделить приём с препаратами железа.",
+    "synergy_with": ["collagen_beauty", "magnesium_organic"],
+    "antagonism_with": ["iron_organic", "vitamin_d3", "calcium_organic"]
   }
 ]

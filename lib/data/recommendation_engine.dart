@@ -9,10 +9,14 @@ class RecommendationEngine {
 
   RecommendationEngine(this.allProducts);
 
-  /// Подбирает препараты по жалобам и диагнозам клиента
+  /// Подбирает препараты по жалобам и диагнозам клиента.
+  /// Применяет бонус +1 за каждого синергичного партнёра в подборке.
   List<ScoredProduct> matchProducts(Client client) {
     final clientConditions = {...client.symptoms, ...client.diagnoses};
-    final scored = <ScoredProduct>[];
+
+    // Первый проход: базовый скор
+    final baseScores = <String, int>{};
+    final matchedOnMap = <String, List<String>>{};
 
     for (final p in allProducts) {
       int score = 0;
@@ -30,16 +34,31 @@ class RecommendationEngine {
       }
 
       if (score > 0) {
-        // Проверка возрастных ограничений
         final dose = p.doseForAge(client.age);
         if (dose == 'Не рекомендовано до 6 лет' || dose == 'Не рекомендовано') {
           continue;
         }
-        scored.add(ScoredProduct(product: p, score: score, matchedOn: matchedOn));
+        baseScores[p.id] = score;
+        matchedOnMap[p.id] = matchedOn;
       }
     }
 
-    // Сортировка: по этапу (1 сначала), затем по очкам
+    // Второй проход: бонус синергии
+    final relevant = baseScores.keys.toSet();
+    for (final p in allProducts) {
+      if (!relevant.contains(p.id)) continue;
+      final bonus = p.synergyWith.where(relevant.contains).length;
+      if (bonus > 0) baseScores[p.id] = baseScores[p.id]! + bonus;
+    }
+
+    // Сборка результата
+    final scored = <ScoredProduct>[];
+    for (final p in allProducts) {
+      final s = baseScores[p.id];
+      if (s == null) continue;
+      scored.add(ScoredProduct(product: p, score: s, matchedOn: matchedOnMap[p.id] ?? []));
+    }
+
     scored.sort((a, b) {
       final stageComp = a.product.stage.compareTo(b.product.stage);
       if (stageComp != 0) return stageComp;
@@ -47,6 +66,33 @@ class RecommendationEngine {
     });
 
     return scored;
+  }
+
+  /// Возвращает пары синергии и антагонизма среди [selected].
+  List<ProductInteraction> getInteractions(List<Product> selected) {
+    final result = <ProductInteraction>[];
+    final seen = <String>{};
+
+    for (int i = 0; i < selected.length; i++) {
+      for (int j = i + 1; j < selected.length; j++) {
+        final a = selected[i];
+        final b = selected[j];
+        final key = [a.id, b.id]..sort();
+        final keyStr = key.join('|');
+        if (seen.contains(keyStr)) continue;
+        seen.add(keyStr);
+
+        final isSynergy = a.synergyWith.contains(b.id) || b.synergyWith.contains(a.id);
+        final isAntag = a.antagonismWith.contains(b.id) || b.antagonismWith.contains(a.id);
+
+        if (isSynergy) result.add(ProductInteraction(a, b, isSynergy: true));
+        if (isAntag)   result.add(ProductInteraction(a, b, isSynergy: false));
+      }
+    }
+
+    // Сначала антагонизмы (важнее)
+    result.sort((x, y) => x.isSynergy ? 1 : -1);
+    return result;
   }
 
   // Окно старта для каждого этапа внутри 60-дневной программы
@@ -178,4 +224,11 @@ class ScoredProduct {
     required this.matchedOn,
     this.selected = false,
   });
+}
+
+class ProductInteraction {
+  final Product a;
+  final Product b;
+  final bool isSynergy;
+  const ProductInteraction(this.a, this.b, {required this.isSynergy});
 }

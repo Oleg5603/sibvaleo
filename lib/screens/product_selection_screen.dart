@@ -108,6 +108,13 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
                 const SizedBox(height: 8),
                 // Рекомендуемые анализы
                 _TestsCard(client: widget.client, engine: widget.engine),
+                const SizedBox(height: 8),
+                // Синергия и антагонизмы среди выбранных препаратов
+                _InteractionCard(
+                  selectedIds: _selectedIds,
+                  scored: _scored,
+                  engine: widget.engine,
+                ),
                 const SizedBox(height: 12),
                 // Препараты по этапам
                 ...byStage.entries.map((entry) => _StageSection(
@@ -515,6 +522,128 @@ class _TestsCardState extends State<_TestsCard> {
             }),
           if (_expanded) const SizedBox(height: 4),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Синергия и антагонизм выбранных препаратов ──────────────────────────────
+class _InteractionCard extends StatelessWidget {
+  final Set<String> selectedIds;
+  final List<ScoredProduct> scored;
+  final RecommendationEngine engine;
+
+  const _InteractionCard({
+    required this.selectedIds,
+    required this.scored,
+    required this.engine,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedProducts = scored
+        .where((s) => selectedIds.contains(s.product.id))
+        .map((s) => s.product)
+        .toList();
+
+    final interactions = engine.getInteractions(selectedProducts);
+    if (interactions.isEmpty) return const SizedBox();
+
+    final antagonisms = interactions.where((i) => !i.isSynergy).toList();
+    final synergies = interactions.where((i) => i.isSynergy).toList();
+
+    return Card(
+      color: antagonisms.isNotEmpty ? Colors.red.shade50 : Colors.green.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Icon(
+                antagonisms.isNotEmpty ? Icons.warning_amber_rounded : Icons.link,
+                size: 18,
+                color: antagonisms.isNotEmpty ? Colors.orange.shade800 : Colors.green.shade800,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Взаимодействия препаратов',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: antagonisms.isNotEmpty ? Colors.orange.shade800 : Colors.green.shade800,
+                ),
+              ),
+            ]),
+            const SizedBox(height: 10),
+
+            // Антагонизмы — важнее, показываем первыми
+            if (antagonisms.isNotEmpty) ...[
+              const Text('⚠ Антагонизм (конкурируют за усвоение):',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.redAccent)),
+              const SizedBox(height: 6),
+              ...antagonisms.map((i) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.block, size: 14, color: Colors.red),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '${i.a.name}  ↔  ${i.b.name}',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )),
+              const SizedBox(height: 4),
+              const Text(
+                'Принимать в разное время суток (интервал ≥ 2 часа)',
+                style: TextStyle(fontSize: 11, color: Colors.redAccent, fontStyle: FontStyle.italic),
+              ),
+            ],
+
+            // Синергии
+            if (synergies.isNotEmpty) ...[
+              if (antagonisms.isNotEmpty) const SizedBox(height: 12),
+              const Text('✓ Синергия (усиливают друг друга):',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF2E7D32))),
+              const SizedBox(height: 6),
+              ...synergies.map((i) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.green.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.add_link, size: 14, color: Color(0xFF2E7D32)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '${i.a.name}  +  ${i.b.name}',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )),
+            ],
+          ],
+        ),
       ),
     );
   }

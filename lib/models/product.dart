@@ -20,6 +20,8 @@ class Product {
   final int minCourseDays;
   final int maxCourseDays;
   final String notes;
+  final List<String> synergyWith;
+  final List<String> antagonismWith;
 
   const Product({
     required this.id,
@@ -43,6 +45,8 @@ class Product {
     required this.minCourseDays,
     required this.maxCourseDays,
     required this.notes,
+    this.synergyWith = const [],
+    this.antagonismWith = const [],
   });
 
   factory Product.fromJson(Map<String, dynamic> j) => Product(
@@ -67,6 +71,8 @@ class Product {
         minCourseDays: j['min_course_days'] ?? 30,
         maxCourseDays: j['max_course_days'] ?? 60,
         notes: j['notes'] ?? '',
+        synergyWith: List<String>.from(j['synergy_with'] ?? []),
+        antagonismWith: List<String>.from(j['antagonism_with'] ?? []),
       );
 
   String doseForAge(int ageyears) {
