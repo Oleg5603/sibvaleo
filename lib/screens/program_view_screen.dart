@@ -168,7 +168,11 @@ class _ProgramViewScreenState extends State<ProgramViewScreen>
       body: TabBarView(
         controller: _tabs,
         children: [
-          _ListView(program: p, stageColors: _stageColors),
+          _ListView(
+            program: p,
+            stageColors: _stageColors,
+            onExport: () => _showExportSheet(context, p),
+          ),
           _TimelineView(program: p, stageColors: _stageColors),
         ],
       ),
@@ -180,7 +184,8 @@ class _ProgramViewScreenState extends State<ProgramViewScreen>
 class _ListView extends StatelessWidget {
   final Program program;
   final Map<int, Color> stageColors;
-  const _ListView({required this.program, required this.stageColors});
+  final VoidCallback onExport;
+  const _ListView({required this.program, required this.stageColors, required this.onExport});
 
   @override
   Widget build(BuildContext context) {
@@ -276,6 +281,67 @@ class _ListView extends StatelessWidget {
               ),
             );
           }),
+
+          // Панель экспорта
+          const SizedBox(height: 8),
+          Card(
+            color: Colors.grey.shade50,
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(children: [
+                    Icon(Icons.ios_share_outlined, size: 18, color: Colors.grey),
+                    SizedBox(width: 8),
+                    Text('Сохранить / Распечатать',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  ]),
+                  const SizedBox(height: 12),
+                  Row(children: [
+                    Expanded(
+                      child: _ExportBtn(
+                        icon: Icons.save_alt_outlined,
+                        label: 'Сохранить\nHTML',
+                        color: const Color(0xFF2E7D32),
+                        onTap: () async {
+                          final path = await exportProgramToHtml(program, openInBrowser: true);
+                          if (path == null) return;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _ExportBtn(
+                        icon: Icons.print_outlined,
+                        label: 'Печать /\nPDF',
+                        color: Colors.blue.shade700,
+                        onTap: () async {
+                          await exportProgramToHtml(program, openInBrowser: true);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _ExportBtn(
+                        icon: Icons.folder_open_outlined,
+                        label: 'Только\nфайл',
+                        color: Colors.orange.shade700,
+                        onTap: () async {
+                          await exportProgramToHtml(program, openInBrowser: false);
+                        },
+                      ),
+                    ),
+                  ]),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'PDF: откройте файл в браузере → Ctrl+P → «Сохранить как PDF»',
+                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ),
 
           // Правило одновременного приёма
           const SizedBox(height: 8),
@@ -413,4 +479,39 @@ class _TimelineView extends StatelessWidget {
   }
 
   String _stageName(int s) => const {1:'ОЧИЩЕНИЕ',2:'ЗАЩИТА',3:'ПИТАНИЕ',4:'ВОССТАНОВЛЕНИЕ'}[s] ?? '';
+}
+
+// ─── Кнопка экспорта ──────────────────────────────────────────────────────────
+class _ExportBtn extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _ExportBtn({required this.icon, required this.label, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(8),
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+        borderRadius: BorderRadius.circular(8),
+        color: color.withValues(alpha: 0.06),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 26),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600, height: 1.3),
+          ),
+        ],
+      ),
+    ),
+  );
 }
