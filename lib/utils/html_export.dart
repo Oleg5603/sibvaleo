@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import '../models/client.dart';
 
@@ -18,7 +19,7 @@ Future<String?> exportProgramToHtml(Program program, {bool openInBrowser = true}
   final filePath = '$desktopDir${Platform.pathSeparator}$fileName';
 
   try {
-    await File(filePath).writeAsString(html, encoding: const SystemEncoding());
+    await File(filePath).writeAsString(html, encoding: utf8);
     if (openInBrowser) {
       if (Platform.isWindows) {
         await Process.run('cmd', ['/c', 'start', '', filePath]);
@@ -36,6 +37,25 @@ Future<String?> exportProgramToHtml(Program program, {bool openInBrowser = true}
 
 String _dateStr(DateTime d) =>
     '${d.year}${d.month.toString().padLeft(2, '0')}${d.day.toString().padLeft(2, '0')}';
+
+const _testNames = {
+  'OAK':           'Общий анализ крови (ОАК)',
+  'OAM':           'Общий анализ мочи (ОАМ)',
+  'BH_liver':      'Биохимия: АЛТ, АСТ, билирубин, ГГТ',
+  'BH_lipids':     'Биохимия: холестерин, ЛПНП, ЛПВП, триглицериды',
+  'BH_glucose':    'Глюкоза крови / HbA1c (гликированный гемоглобин)',
+  'TSH_T4':        'ТТГ, Т4 свободный (щитовидная железа)',
+  'ferritin':      'Ферритин, железо сывороточное',
+  'vitD':          'Витамин D (25-OH)',
+  'CRP':           'СРБ (С-реактивный белок) — воспаление',
+  'sex_hormones':  'Половые гормоны (ЛГ, ФСГ, эстрадиол, прогестерон)',
+  'testosterone':  'Тестостерон общий',
+  'psa':           'ПСА (простата-специфический антиген)',
+  'magnesium_bl':  'Магний в крови',
+  'uzi_abdom':     'УЗИ органов брюшной полости',
+  'uzi_thyroid':   'УЗИ щитовидной железы',
+  'echo_heart':    'ЭхоКГ (УЗИ сердца)',
+};
 
 const _stageColors = {
   1: '#8D6E63',
@@ -83,8 +103,8 @@ String _buildHtml(Program program) {
   final testsHtml = program.recommendedTests.isNotEmpty
       ? '''
         <div class="tests">
-          <h3>Рекомендуемые анализы (до начала курса)</h3>
-          <ul>${program.recommendedTests.map((t) => '<li>$t</li>').join()}</ul>
+          <h3>Рекомендуемые обследования (до начала курса)</h3>
+          <ul>${program.recommendedTests.map((t) => '<li>${_testNames[t] ?? t}</li>').join()}</ul>
         </div>'''
       : '';
 
