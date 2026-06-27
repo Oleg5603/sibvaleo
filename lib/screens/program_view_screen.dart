@@ -29,6 +29,110 @@ class _ProgramViewScreenState extends State<ProgramViewScreen>
     _tabs = TabController(length: 2, vsync: this);
   }
 
+  void _showExportSheet(BuildContext context, Program p) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text('Экспорт программы',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              _exportTile(
+                context,
+                icon: Icons.save_alt_outlined,
+                color: const Color(0xFF2E7D32),
+                title: 'Сохранить HTML на рабочий стол',
+                subtitle: 'Файл откроется в браузере автоматически',
+                onTap: () async {
+                  Navigator.pop(context);
+                  final path = await exportProgramToHtml(p, openInBrowser: true);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(path != null ? 'Сохранено: $path' : 'Ошибка сохранения'),
+                    duration: const Duration(seconds: 4),
+                  ));
+                },
+              ),
+              const Divider(height: 1),
+              _exportTile(
+                context,
+                icon: Icons.print_outlined,
+                color: Colors.blue.shade700,
+                title: 'Печать / Сохранить PDF',
+                subtitle: 'Открыть в браузере → Ctrl+P → «Сохранить как PDF»',
+                onTap: () async {
+                  Navigator.pop(context);
+                  final path = await exportProgramToHtml(p, openInBrowser: true);
+                  if (!context.mounted) return;
+                  if (path != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Открыт в браузере. Нажмите Ctrl+P → Сохранить как PDF'),
+                      duration: Duration(seconds: 5),
+                    ));
+                  }
+                },
+              ),
+              const Divider(height: 1),
+              _exportTile(
+                context,
+                icon: Icons.folder_open_outlined,
+                color: Colors.orange.shade700,
+                title: 'Только сохранить файл',
+                subtitle: 'Сохранить HTML на рабочий стол без открытия',
+                onTap: () async {
+                  Navigator.pop(context);
+                  final path = await exportProgramToHtml(p, openInBrowser: false);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(path != null ? 'Файл сохранён: $path' : 'Ошибка'),
+                    duration: const Duration(seconds: 4),
+                  ));
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _exportTile(
+    BuildContext context, {
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) =>
+      ListTile(
+        leading: CircleAvatar(
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(icon, color: color, size: 22),
+        ),
+        title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      );
+
   @override
   void dispose() {
     _tabs.dispose();
@@ -45,18 +149,9 @@ class _ProgramViewScreenState extends State<ProgramViewScreen>
         foregroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.print_outlined),
-            tooltip: 'Экспорт / Печать',
-            onPressed: () async {
-              final path = await exportProgramToHtml(p);
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(path != null
-                    ? 'Открыт в браузере. Ctrl+P для печати / PDF'
-                    : 'Ошибка экспорта'),
-                duration: const Duration(seconds: 4),
-              ));
-            },
+            icon: const Icon(Icons.ios_share_outlined),
+            tooltip: 'Экспорт',
+            onPressed: () => _showExportSheet(context, p),
           ),
         ],
         bottom: TabBar(

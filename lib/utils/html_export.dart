@@ -1,7 +1,7 @@
 import 'dart:io';
 import '../models/client.dart';
 
-Future<String?> exportProgramToHtml(Program program) async {
+Future<String?> exportProgramToHtml(Program program, {bool openInBrowser = true}) async {
   final html = _buildHtml(program);
 
   final String desktopDir;
@@ -19,12 +19,14 @@ Future<String?> exportProgramToHtml(Program program) async {
 
   try {
     await File(filePath).writeAsString(html, encoding: const SystemEncoding());
-    if (Platform.isWindows) {
-      await Process.run('cmd', ['/c', 'start', '', filePath]);
-    } else if (Platform.isMacOS) {
-      await Process.run('open', [filePath]);
-    } else {
-      await Process.run('xdg-open', [filePath]);
+    if (openInBrowser) {
+      if (Platform.isWindows) {
+        await Process.run('cmd', ['/c', 'start', '', filePath]);
+      } else if (Platform.isMacOS) {
+        await Process.run('open', [filePath]);
+      } else {
+        await Process.run('xdg-open', [filePath]);
+      }
     }
     return filePath;
   } catch (_) {
