@@ -373,6 +373,29 @@ class _Analysis {
   const _Analysis({required this.primary, required this.secondary, required this.cascade, required this.systemCounts});
 }
 
+// Русские названия для английских ID из скрининга
+const _screeningIdNames = {
+  'anti_age': 'Антивозрастная поддержка',
+  'antioxidant': 'Антиоксидантная защита',
+  'brain_support': 'Поддержка мозга',
+  'metabolism_disorders': 'Нарушения обмена веществ',
+  'immunity': 'Иммунитет',
+  'chronic_infection': 'Хронические инфекции',
+  'seasonal_prevention': 'Сезонная профилактика',
+  'vitamin_deficiency': 'Дефицит витаминов',
+  'general_health': 'Общее здоровье',
+  'cardiovascular': 'Сердечно-сосудистая система',
+  'detox': 'Детокс',
+  'allergy': 'Аллергия',
+  'chemical_exposure': 'Воздействие химикатов',
+  'after_illness': 'После болезни',
+  'after_antibiotics': 'После антибиотиков',
+  'chronic_stress': 'Хронический стресс',
+  'bone_health': 'Здоровье костей',
+  'joint_pain': 'Боли в суставах',
+  'brittle_nails': 'Ломкость ногтей',
+};
+
 // ─── Сводка жалоб клиента ────────────────────────────────────────────────────
 class _ComplaintsCard extends StatefulWidget {
   final Client client;
@@ -382,8 +405,8 @@ class _ComplaintsCard extends StatefulWidget {
 }
 
 class _ComplaintsCardState extends State<_ComplaintsCard> {
-  bool _expanded = false;
-  Map<String, String> _symNames = {}; // id → name
+  bool _expanded = true; // сразу раскрыто
+  Map<String, String> _symNames = {};
   Map<String, String> _diagNames = {};
 
   @override
@@ -406,6 +429,12 @@ class _ComplaintsCardState extends State<_ComplaintsCard> {
     if (mounted) setState(() { _symNames = sm; _diagNames = dm; });
   }
 
+  // Перевод ID в читаемое имя: сначала conditions.json, потом скрининг-словарь, иначе сам ID
+  String _name(String id, {bool isDiag = false}) {
+    if (isDiag) return _diagNames[id] ?? _screeningIdNames[id] ?? id;
+    return _symNames[id] ?? _screeningIdNames[id] ?? id;
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = widget.client;
@@ -420,15 +449,30 @@ class _ComplaintsCardState extends State<_ComplaintsCard> {
             leading: const Icon(Icons.person_search, color: Colors.teal),
             title: Text('Жалобы: ${c.name}', style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text('$allCount позиций'),
-            trailing: IconButton(
-              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-              onPressed: () => setState(() => _expanded = !_expanded),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Кнопка "Изменить" — вернуться в форму
+                TextButton.icon(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.edit_outlined, size: 16),
+                  label: const Text('Изменить', style: TextStyle(fontSize: 12)),
+                  style: TextButton.styleFrom(foregroundColor: Colors.teal),
+                ),
+                IconButton(
+                  icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+                  onPressed: () => setState(() => _expanded = !_expanded),
+                ),
+              ],
             ),
           ),
           if (_expanded) ...[
-            if (c.symptoms.isNotEmpty) _section('Симптомы', c.symptoms.map((id) => _symNames[id] ?? id).toList(), Colors.teal),
-            if (c.diagnoses.isNotEmpty) _section('Диагнозы', c.diagnoses.map((id) => _diagNames[id] ?? id).toList(), Colors.indigo),
-            if (c.customSymptoms.isNotEmpty) _section('Другие жалобы', c.customSymptoms, Colors.green),
+            if (c.symptoms.isNotEmpty)
+              _section('Симптомы', c.symptoms.map((id) => _name(id)).toList(), Colors.teal),
+            if (c.diagnoses.isNotEmpty)
+              _section('Диагнозы', c.diagnoses.map((id) => _name(id, isDiag: true)).toList(), Colors.indigo),
+            if (c.customSymptoms.isNotEmpty)
+              _section('Другие жалобы', c.customSymptoms, Colors.green),
             const SizedBox(height: 8),
           ],
         ],
