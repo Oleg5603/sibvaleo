@@ -98,12 +98,17 @@ class RecommendationEngine {
   // Окно старта для каждого этапа внутри 60-дневной программы
   static const _stageStartDay = {1: 1, 2: 8, 3: 22, 4: 36};
 
-  int _activeAt(List<ProgramEntry> entries, int day) =>
-      entries.where((e) => e.startDay <= day && e.endDay >= day).length;
+  // Считаем одновременные препараты ТОЛЬКО внутри одного этапа.
+  // Этапы накладываются друг на друга — это норма протокола
+  // (ОЧИЩЕНИЕ → +ЗАЩИТА → +ПИТАНИЕ → +ВОССТАНОВЛЕНИЕ).
+  int _activeAtInStage(List<ProgramEntry> entries, int stage, int day) =>
+      entries.where((e) => e.stage == stage && e.startDay <= day && e.endDay >= day).length;
 
   /// Строит 60-дневную программу из выбранных препаратов.
-  /// Каждый этап получает своё окно: 1→д.1, 2→д.8, 3→д.22, 4→д.36.
-  /// Это гарантирует присутствие всех 4 этапов на шкале.
+  /// Каждый этап получает своё фиксированное окно старта:
+  ///   1→д.1, 2→д.8, 3→д.22, 4→д.36
+  /// Лимит 3 препарата считается внутри каждого этапа отдельно,
+  /// чтобы Этап 4 не вытеснялся перегрузкой предыдущих этапов.
   Program buildProgram(Client client, List<Product> selected) {
     final byStage = <int, List<Product>>{};
     for (final p in selected) {
@@ -121,8 +126,8 @@ class RecommendationEngine {
       for (final p in products) {
         if (day > _programDays) break;
 
-        // Сдвигаем вперёд если уже 3 одновременных
-        while (_activeAt(entries, day) >= _maxPerReception && day <= _programDays) {
+        // Сдвигаем внутри этапа если уже 3 одновременных в этом же этапе
+        while (_activeAtInStage(entries, stage, day) >= _maxPerReception && day <= _programDays) {
           day++;
         }
         if (day > _programDays) break;
@@ -143,8 +148,11 @@ class RecommendationEngine {
       }
     }
 
-    // Сортируем по дню начала для красивого отображения
-    entries.sort((a, b) => a.startDay.compareTo(b.startDay));
+    // Сортируем по этапу, затем по дню старта
+    entries.sort((a, b) {
+      final sc = a.stage.compareTo(b.stage);
+      return sc != 0 ? sc : a.startDay.compareTo(b.startDay);
+    });
 
     final tests = _recommendTests(client);
 
