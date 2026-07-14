@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sibvaleo — инструмент консультанта Siberian Wellness</title>
+<style>
+  :root {
+    --bg: #0f1410;
+    --card: #161d17;
+    --accent: #4caf6d;
+    --text: #eaf2ec;
+    --muted: #9db3a4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .card {
+    max-width: 480px;
+    width: 100%;
+    background: var(--card);
+    border-radius: 16px;
+    padding: 40px 32px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+  h1 {
+    font-size: 1.6rem;
+    margin: 0 0 8px;
+  }
+  p.subtitle {
+    color: var(--muted);
+    margin: 0 0 28px;
+    line-height: 1.5;
+  }
+  .features {
+    text-align: left;
+    margin: 0 0 32px;
+    padding: 0;
+    list-style: none;
+  }
+  .features li {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: var(--muted);
+  }
+  .features li:last-child { border-bottom: none; }
+  .features li::before {
+    content: "✓ ";
+    color: var(--accent);
+    font-weight: bold;
+  }
+  a.download {
+    display: inline-block;
+    background: var(--accent);
+    color: #05130a;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  a.download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76,175,109,0.35);
+  }
+  .meta {
+    margin-top: 16px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(76,175,109,0.15);
+    color: var(--accent);
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">Windows · пробный период 4 дня</span>
+    <h1>Sibvaleo</h1>
+    <p class="subtitle">Инструмент консультанта Siberian Wellness: подбирает продуктовые программы под жалобы клиента, экспортирует в HTML и PDF.</p>
+    <ul class="features">
+      <li>Анкета клиента и подбор программы по жалобам</li>
+      <li>Каталог продуктов Siberian Wellness</li>
+      <li>Экспорт готовой программы в HTML/PDF</li>
+      <li>Работает офлайн, данные хранятся локально</li>
+    </ul>
+    <a class="download" href="sibvaleo-demo.zip">Скачать для Windows</a>
+    <div class="meta">Демо-версия · 4 дня бесплатно</div>
+  </div>
+</body>
+</html>

@@ -22,6 +22,9 @@ ios/.symlinks/
 macos/Flutter/GeneratedPluginRegistrant.swift
 macos/Flutter/ephemeral/
 
+# Landing deploy artifacts (uploaded directly to hosting, not tracked)
+landing/*.zip
+
 # Windows
 windows/flutter/generated_plugin_registrant.cc
 windows/flutter/generated_plugin_registrant.h
